@@ -86,8 +86,8 @@ public class Settings {
 	}
 
 	private static void createDefaultSettingsFile() throws IllegalStateException, IOException {
-		width = 1600;
-		height = 900;
+		width = 1024;
+		height = 640;
 
 		saveSettings();
 	}
