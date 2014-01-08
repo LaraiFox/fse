@@ -3,6 +3,7 @@ package net.laraifox.fse.main;
 import net.laraifox.lib.display.OpenGLDisplay;
 import net.laraifox.lib.graphics.Camera;
 import net.laraifox.lib.graphics.Color3f;
+import net.laraifox.lib.graphics.FirstPersonCamera;
 import net.laraifox.lib.graphics.Mesh;
 import net.laraifox.lib.graphics.MeshLoader;
 import net.laraifox.lib.graphics.Transformf;
@@ -17,10 +18,8 @@ import org.lwjgl.util.glu.GLU;
 
 public class GameDisplay extends OpenGLDisplay {
 	private Camera camera;
-	private BasicShader shader;
-	private Transformf transform;
-
-	private Mesh test;
+	private SimpleShader shader;
+	private Fighter testFighter;
 
 	public GameDisplay(int width, int height) {
 		super("Flight Squadron Epsilon", width, height);
@@ -29,8 +28,7 @@ public class GameDisplay extends OpenGLDisplay {
 	protected void initializeOpenGL() {
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		GL11.glLoadIdentity();
-		//GLU.gluPerspective(70f, (float) getWidth() / (float) getHeight(), 0.1f, 1000f);
-		GL11.glOrtho(-1, 1, -1, 1, 0.1, 100);
+		GL11.glOrtho(-1, 1, -1, 1, 0.1, 1000f);
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 
 		GL11.glViewport(0, 0, getWidth(), getHeight());
@@ -44,13 +42,11 @@ public class GameDisplay extends OpenGLDisplay {
 	}
 
 	protected void initializeVariables() {
-		this.camera = new Camera();
+		this.camera = new FirstPersonCamera();
 		camera.setPosition(new Vector3f(0, 0, -1));
-		this.shader = new BasicShader();
-		this.transform = new Transformf();
-		transform.setScale(new Vector3f(1, 1, 1));
+		this.shader = new SimpleShader();
 
-		this.test = MeshLoader.loadMesh("./res/models/unit_cube.obj");
+		this.testFighter = new Fighter(Vector3f.Zero());
 
 		Transformf.setProjection(70.0f, (float) getWidth(), (float) getHeight(), 0.1f, 1000.0f);
 		Transformf.setCamera(camera);
@@ -70,74 +66,71 @@ public class GameDisplay extends OpenGLDisplay {
 
 	}
 
-	float rx = 0, ry = 0, rz = 0;
+	private void handleInput() {
+		if (Keyboard.isKeyDown(Keyboard.KEY_W))
+			camera.move(camera.getForward(), 0.2f);
+		if (Keyboard.isKeyDown(Keyboard.KEY_S))
+			camera.move(camera.getForward(), -0.2f);
+		if (Keyboard.isKeyDown(Keyboard.KEY_A))
+			camera.move(camera.getLeft(), 0.2f);
+		if (Keyboard.isKeyDown(Keyboard.KEY_D))
+			camera.move(camera.getRight(), 0.2f);
+		if (Keyboard.isKeyDown(Keyboard.KEY_SPACE))
+			camera.move(Vector3f.Up(), 0.2f);
+		if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT))
+			camera.move(Vector3f.Up(), -0.2f);
+		if (Mouse.isGrabbed()) {
+			// float mouseDX = Mouse.getX() - (getWidth() / 2.0f);
+			// float mouseDY = (getHeight() / 2.0f) - Mouse.getY();
+			//
+			// Mouse.setCursorPosition((int) (getWidth() / 2.0f), (int) (getHeight() / 2.0f));
+			//
+			// camera.rotateX(mouseDY * 0.5f);
+			// camera.rotateY(mouseDX * 0.5f);
 
-	float temp = 0.0f;
+			if (Keyboard.isKeyDown(Keyboard.KEY_LMENU)) {
+				Mouse.setGrabbed(false);
+			}
+		} else if (Mouse.isInsideWindow() && Mouse.isButtonDown(0)) {
+			Mouse.setCursorPosition((int) (getWidth() / 2.0f), (int) (getHeight() / 2.0f));
+			Mouse.setGrabbed(true);
+		} else {
+			if (Keyboard.isKeyDown(Keyboard.KEY_UP))
+				camera.rotateX(-1);
+			if (Keyboard.isKeyDown(Keyboard.KEY_DOWN))
+				camera.rotateX(1);
+			if (Keyboard.isKeyDown(Keyboard.KEY_LEFT))
+				camera.rotateY(-1);
+			if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT))
+				camera.rotateY(1);
+		}
+	}
 
 	protected void update(double delta) {
-		if (Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
-			Mouse.setClipMouseCoordinatesToWindow(!Mouse.isClipMouseCoordinatesToWindow());
-			Mouse.setGrabbed(!Mouse.isGrabbed());
+		float mouseDX = 0;
+		float mouseDY = 0;
+		if (Mouse.isGrabbed()) {
+			mouseDX = Mouse.getX() - (getWidth() / 2.0f);
+			mouseDY = (getHeight() / 2.0f) - Mouse.getY();
+			Mouse.setCursorPosition((int) (getWidth() / 2.0f), (int) (getHeight() / 2.0f));
 		}
+		handleInput();
+
 		if (Keyboard.isKeyDown(Keyboard.KEY_R)) {
-			camera = new Camera();
+			camera = new FirstPersonCamera();
 			camera.setPosition(new Vector3f(0, 0, -1));
 			Transformf.setCamera(camera);
 		}
 
-		if (Keyboard.isKeyDown(Keyboard.KEY_W))
-			camera.move(camera.getForward(), -1.0f);
-		if (Keyboard.isKeyDown(Keyboard.KEY_S))
-			camera.move(camera.getForward(), 1.0f);
-		if (Keyboard.isKeyDown(Keyboard.KEY_A))
-			camera.move(camera.getLeft(), 1.0f);
-		if (Keyboard.isKeyDown(Keyboard.KEY_D))
-			camera.move(camera.getRight(), 1.0f);
-
-		if (Keyboard.isKeyDown(Keyboard.KEY_UP)) {
-			rx -= 1;
-			camera.rotateX(-1);
-		}
-		if (Keyboard.isKeyDown(Keyboard.KEY_DOWN)) {
-			rx += 1;
-			camera.rotateX(1);
-		}
-		if (Keyboard.isKeyDown(Keyboard.KEY_LEFT)) {
-			ry -= 1;
-			camera.rotateY(-1);
-		}
-		if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT)) {
-			ry += 1;
-			camera.rotateY(1);
-		}
-
-		float mouseDX = Mouse.getDX();
-		float mouseDY = Mouse.getDY();
-
-		// camera.rotateX(mouseDY);
-		// camera.rotateY(mouseDX);
-
-		temp += delta;
-
-		float sinTemp = (float) Math.sin(temp);
-
-		transform.setTranslation(0, 0, 2);
-		// transform.setRotation(0, sinTemp * 180, 0);
+		testFighter.update(mouseDX, mouseDY);
 	}
 
 	protected void render() {
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 		GL11.glLoadIdentity();
-		// GL11.glDisable(GL11.GL_TEXTURE_2D);
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
 		shader.bindShader();
-		shader.updateUniforms(transform.getTransformation(), transform.getProjectedTransformation(), new Color3f(1.0f, 1.0f, 1.0f));
 
-		Matrix4f testMatrix = transform.getTransformation();
-		System.out.println(testMatrix.toString());
-		System.out.println("Camera == " + Transformf.getCamera().getPosition().toString(1));
-		System.out.println("Orient == " + Transformf.getCamera().getForward().toString(1) + ", " + Transformf.getCamera().getUpward().toString(1) + "\n");
-
-		test.render();
+		testFighter.render(shader);
 	}
 }

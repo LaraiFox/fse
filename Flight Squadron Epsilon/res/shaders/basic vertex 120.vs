@@ -10,6 +10,6 @@ uniform mat4 transform;
 void main() {
     texCoord = texCoordAttrib;
 
-    vec4 position = vec4(transform * vec4(positionAttrib, 1.0));
-    gl_Position = position;
+//    vec4 position = transform * vec4(positionAttrib, 1.0);
+    gl_Position = transform * vec4(positionAttrib, 1.0);
 }

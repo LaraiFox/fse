@@ -26,4 +26,8 @@ public class BasicShader extends Shader {
 		setUniform("transform", projectionMatrix);
 		setUniform("color", VectorUtil.toVector3f(color));
 	}
+	
+	public void bindShader() {
+		super.bind();
+	}
 }
