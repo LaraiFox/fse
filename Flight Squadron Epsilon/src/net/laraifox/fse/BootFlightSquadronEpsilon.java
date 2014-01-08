@@ -36,7 +36,7 @@ public class BootFlightSquadronEpsilon {
 			Settings.initializeProgramDirectories();
 			Settings.loadSettings();
 
-			GameDisplay programDisplay = new GameDisplay(1024, 640);
+			GameDisplay programDisplay = new GameDisplay(1760, 990);
 			programDisplay.setOrthoNear(0.1f);
 			programDisplay.setOrthoFar(1000.0f);
 			programDisplay.intitialize();
