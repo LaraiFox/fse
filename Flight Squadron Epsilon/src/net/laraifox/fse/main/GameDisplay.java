@@ -1,25 +1,34 @@
 package net.laraifox.fse.main;
 
+import java.awt.Font;
+import java.util.ArrayList;
+
 import net.laraifox.lib.display.OpenGLDisplay;
 import net.laraifox.lib.graphics.Camera;
 import net.laraifox.lib.graphics.Color3f;
-import net.laraifox.lib.graphics.Mesh;
-import net.laraifox.lib.graphics.MeshLoader;
+import net.laraifox.lib.graphics.FirstPersonCamera;
 import net.laraifox.lib.graphics.Transformf;
-import net.laraifox.lib.math.Matrix4f;
+import net.laraifox.lib.math.Vector2f;
 import net.laraifox.lib.math.Vector3f;
+import net.laraifox.lib.text.VectorFont;
 
-import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.glu.GLU;
 
 public class GameDisplay extends OpenGLDisplay {
+	private static final float MOUSE_LOOK_SENSITIVITY = 0.3f;
+
+	private static ArrayList<String> stringBuffer = new ArrayList<String>();
+
+	private VectorFont font;
+	private Vector2f fontScale;
+
 	private Camera camera;
 	private Transformf transform;
-
-	private Mesh test;
+	private SimpleShader simpleShader;
+	private TextureShader textureShader;
+	private Fighter testFighter;
 
 	public GameDisplay(float width, float height) {
 		super("Flight Squadron Epsilon", width, height);
@@ -28,13 +37,19 @@ public class GameDisplay extends OpenGLDisplay {
 	protected void initializeOpenGL() {
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		GL11.glLoadIdentity();
-		GLU.gluPerspective(70f, width / height, 0.1f, 1000f);
-		// GL11.glOrtho(-1, 1, -1, 1, 0.1, 1);
+		// GLU.gluPerspective(70f, width / height, 0.1f, 1000f);
+		GL11.glOrtho(-1, 1, -1, 1, 0.1, 1000f);
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
-
 		GL11.glViewport(0, 0, (int) width, (int) height);
+
+		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+
 		GL11.glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+
+		GL11.glEnable(GL11.GL_BLEND);
+		GL11.glEnable(GL11.GL_DEPTH_TEST);
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
+
 		GL11.glViewport(0, 0, (int) width, (int) height);
 	}
 
@@ -43,11 +58,17 @@ public class GameDisplay extends OpenGLDisplay {
 	}
 
 	protected void initializeVariables() {
-		this.camera = new Camera();
-		camera.setPosition(new Vector3f(-5, 0, 0));
-		this.transform = new Transformf();
+		this.font = new VectorFont(new Font("Consolas", Font.PLAIN, 13), true);
+		this.fontScale = new Vector2f(2.0f / width, 2.0f / height);
 
-		this.test = MeshLoader.loadMesh("./res/models/unit_cube.obj");
+		this.camera = new FirstPersonCamera();
+		camera.setPosition(new Vector3f(0, 2, 20));
+		camera.setForward(Vector3f.Backward());
+		this.transform = new Transformf();
+		this.simpleShader = new SimpleShader();
+		this.textureShader = new TextureShader();
+
+		this.testFighter = new Fighter(Vector3f.Zero());
 
 		Transformf.setProjection(70.0f, (float) getWidth(), (float) getHeight(), 0.1f, 1000.0f);
 		Transformf.setCamera(camera);
@@ -67,16 +88,19 @@ public class GameDisplay extends OpenGLDisplay {
 
 	}
 
-	protected void update(double delta) {
+	private void handleInput(float mouseDX, float mouseDY) {
 		if (Keyboard.isKeyDown(Keyboard.KEY_W))
-			camera.move(camera.getRight(), 0.1f);
+			camera.move(camera.getForward(), 0.2f);
 		if (Keyboard.isKeyDown(Keyboard.KEY_S))
-			camera.move(camera.getLeft(), 0.1f);
+			camera.move(camera.getForward(), -0.2f);
 		if (Keyboard.isKeyDown(Keyboard.KEY_A))
-			camera.move(camera.getForward(), -0.1f);
+			camera.move(camera.getLeft(), 0.2f);
 		if (Keyboard.isKeyDown(Keyboard.KEY_D))
-			camera.move(camera.getForward(), 0.1f);
-
+			camera.move(camera.getRight(), 0.2f);
+		if (Keyboard.isKeyDown(Keyboard.KEY_SPACE))
+			camera.move(Vector3f.Up(), 0.2f);
+		if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL))
+			camera.move(Vector3f.Up(), -0.2f);
 		if (Keyboard.isKeyDown(Keyboard.KEY_UP))
 			camera.rotateX(-1);
 		if (Keyboard.isKeyDown(Keyboard.KEY_DOWN))
@@ -87,73 +111,119 @@ public class GameDisplay extends OpenGLDisplay {
 			camera.rotateY(1);
 
 		if (Mouse.isGrabbed()) {
-			float dx = (width / 2.0f - Mouse.getX()) * 0.6f;
-			float dy = (Mouse.getY() - height / 2.0f) * 0.6f;
+			camera.rotateX(mouseDY * MOUSE_LOOK_SENSITIVITY);
+			camera.rotateY(mouseDX * MOUSE_LOOK_SENSITIVITY);
 
-			Mouse.setCursorPosition((int) (width / 2.0f), (int) (height / 2.0f));
-
-			camera.rotateY(dx);
-			camera.rotateX(dy);
-
-			if (Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
+			if (Keyboard.isKeyDown(Keyboard.KEY_LMENU)) {
 				Mouse.setGrabbed(false);
 			}
-		} else if (Mouse.isButtonDown(0)) {
-			Mouse.setCursorPosition((int) (width / 2.0f), (int) (height / 2.0f));
+		} else if (Mouse.isInsideWindow() && Mouse.isButtonDown(0)) {
+			Mouse.setCursorPosition((int) (getWidth() / 2.0f), (int) (getHeight() / 2.0f));
 			Mouse.setGrabbed(true);
 		}
+	}
+
+	protected void update(double delta) {
+		if (Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
+			super.stop();
+		}
+
+		float mouseDX = 0;
+		float mouseDY = 0;
+		if (Mouse.isGrabbed()) {
+			mouseDX = Mouse.getX() - (getWidth() / 2.0f);
+			mouseDY = (getHeight() / 2.0f) - Mouse.getY();
+			Mouse.setCursorPosition((int) (getWidth() / 2.0f), (int) (getHeight() / 2.0f));
+		}
+		handleInput(mouseDX, mouseDY);
+
 		if (Keyboard.isKeyDown(Keyboard.KEY_R)) {
-			camera = new Camera();
-			camera.setPosition(new Vector3f(0, 0, -1));
+			camera = new FirstPersonCamera();
+			camera.setPosition(new Vector3f(0, 0, -10));
+			camera.setForward(Vector3f.Backward());
 			Transformf.setCamera(camera);
 		}
+
+		testFighter.update();
 	}
 
 	protected void render() {
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 		GL11.glLoadIdentity();
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+		simpleShader.bindShader();
+		simpleShader.updateUniforms(transform.getProjectedTransformation(), new Color3f(1.0f, 1.0f, 1.0f));
 
-		Vector3f position = camera.getPosition();
-		Vector3f forward = Vector3f.add(position, camera.getForward());
-		Vector3f upward = Vector3f.add(position, camera.getUpward());
+		drawWorldAxes();
 
-		GLU.gluLookAt(position.getX(), position.getY(), position.getZ(), forward.getX(), forward.getY(), forward.getZ(), upward.getX(), upward.getY(), upward.getZ());
+		GL11.glColor3f(1, 1, 1);
+		testFighter.render(simpleShader);
 
-		GL11.glPushMatrix();
-		GL11.glTranslatef(0, 0, 10);
-		GL11.glColor3f(1, 0, 0);
-		test.render();
-		GL11.glPopMatrix();
+		drawOnScreenData();
+	}
 
-		GL11.glPushMatrix();
-		GL11.glTranslatef(0, 0, -10);
-		GL11.glColor3f(0, 1, 1);
-		test.render();
-		GL11.glPopMatrix();
+	private void drawOnScreenData() {
+		textureShader.bindShader();
+		textureShader.updateUniforms(transform.getTransformation(), new Color3f(1.0f, 1.0f, 1.0f));
 
-		GL11.glPushMatrix();
-		GL11.glTranslatef(0, 10, 0);
-		GL11.glColor3f(0, 1, 0);
-		test.render();
-		GL11.glPopMatrix();
-
-		GL11.glPushMatrix();
-		GL11.glTranslatef(0, -10, 0);
-		GL11.glColor3f(1, 0, 1);
-		test.render();
-		GL11.glPopMatrix();
-
-		GL11.glPushMatrix();
-		GL11.glTranslatef(10, 0, 0);
-		GL11.glColor3f(0, 0, 1);
-		test.render();
-		GL11.glPopMatrix();
-
-		GL11.glPushMatrix();
-		GL11.glTranslatef(-10, 0, 0);
+		GL11.glDisable(GL11.GL_DEPTH_TEST);
 		GL11.glColor3f(1, 1, 0);
-		test.render();
-		GL11.glPopMatrix();
+
+		font.drawString(0.99f, 0.96f, "FPS: " + getCurrentFPS() + ", (Updates: " + getCurrentUPS() + ")", fontScale.getX(), fontScale.getY(), VectorFont.ALIGN_RIGHT);
+
+		for (int i = 0; i < stringBuffer.size(); i++) {
+			float x = (10 / width * 2.0f) - 1.0f;
+			float y = 1.0f - ((25 + i * 90) / height * 2.0f);
+			font.drawString(x, y, stringBuffer.get(i), fontScale.getX(), fontScale.getY());
+		}
+
+		GameDisplay.stringBuffer.clear();
+		GL11.glEnable(GL11.GL_DEPTH_TEST);
+	}
+
+	private void drawWorldAxes() {
+		GL11.glLineWidth(3.0f);
+		GL11.glBegin(GL11.GL_LINES);
+
+		// X axis marker
+		GL11.glColor3f(1, 0, 0);
+		GL11.glVertex3f(0, 0, 0);
+		GL11.glVertex3f(100, 0, 0);
+
+		// Y axis marker
+		GL11.glColor3f(0, 1, 0);
+		GL11.glVertex3f(0, 0, 0);
+		GL11.glVertex3f(0, 100, 0);
+
+		// Z axis marker
+		GL11.glColor3f(0, 0, 1);
+		GL11.glVertex3f(0, 0, 0);
+		GL11.glVertex3f(0, 0, 100);
+
+		GL11.glEnd();
+		GL11.glLineWidth(0.5f);
+		GL11.glBegin(GL11.GL_LINES);
+
+		// -X axis marker
+		GL11.glColor3f(1, 0, 0);
+		GL11.glVertex3f(0, 0, 0);
+		GL11.glVertex3f(-100, 0, 0);
+
+		// -Y axis marker
+		GL11.glColor3f(0, 1, 0);
+		GL11.glVertex3f(0, 0, 0);
+		GL11.glVertex3f(0, -100, 0);
+
+		// -Z axis marker
+		GL11.glColor3f(0, 0, 1);
+		GL11.glVertex3f(0, 0, 0);
+		GL11.glVertex3f(0, 0, -100);
+
+		GL11.glEnd();
+		GL11.glLineWidth(1.0f);
+	}
+
+	public static void addStringToBuffer(String string) {
+		GameDisplay.stringBuffer.add(string);
 	}
 }

@@ -19,7 +19,7 @@ public class BootFlightSquadronEpsilon {
 			Settings.setProgramDirectory("/Users/" + username + "/AppData/Roaming/" + programFolder);
 		} else if (operatingSystem.contains("mac")) {
 			System.setProperty("org.lwjgl.librarypath", new File("res/lwjgl-natives/macosx").getAbsolutePath());
-			System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Tower Defense");
+			System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Flight Squadron Epsilon");
 
 			Settings.setProgramDirectory("/Users/" + username + "/Library/" + programFolder);
 		} else if (operatingSystem.contains("linux")) {
@@ -36,7 +36,7 @@ public class BootFlightSquadronEpsilon {
 			Settings.initializeProgramDirectories();
 			Settings.loadSettings();
 
-			GameDisplay programDisplay = new GameDisplay(1760, 990);
+			GameDisplay programDisplay = new GameDisplay(1600, 900);
 			programDisplay.setOrthoNear(0.1f);
 			programDisplay.setOrthoFar(1000.0f);
 			programDisplay.intitialize();
