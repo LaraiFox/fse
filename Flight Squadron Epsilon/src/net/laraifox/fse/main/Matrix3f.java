@@ -73,6 +73,32 @@ public class Matrix3f {
 		return rzMatrix.multiply(ryMatrix.multiply(rxMatrix));
 	}
 
+	public static Matrix3f initializeRotationMatrix(Vector3f axis, float theta) {
+		Matrix3f result = new Matrix3f();
+
+		float s = (float) Math.sin(theta);
+		float c = (float) Math.cos(theta);
+		float C = 1.0f - c;
+
+		float x = axis.getX();
+		float y = axis.getY();
+		float z = axis.getZ();
+
+		result.setDataAt(0, 0, x * x * C + c);
+		result.setDataAt(0, 1, x * y * C - z * s);
+		result.setDataAt(0, 2, x * z * C + y * s);
+
+		result.setDataAt(1, 0, y * x * C + z * s);
+		result.setDataAt(1, 1, y * y * C + c);
+		result.setDataAt(1, 2, y * z * C - x * s);
+
+		result.setDataAt(2, 0, z * x * C - y * s);
+		result.setDataAt(2, 1, z * y * C + x * s);
+		result.setDataAt(2, 2, z * z * C + c);
+
+		return result;
+	}
+
 	public Matrix3f multiply(Matrix3f matrix) {
 		Matrix3f result = new Matrix3f();
 		for (int i = 0; i < 3; i++) {

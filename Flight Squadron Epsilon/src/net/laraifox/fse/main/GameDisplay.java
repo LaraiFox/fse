@@ -7,6 +7,9 @@ import net.laraifox.lib.display.OpenGLDisplay;
 import net.laraifox.lib.graphics.Camera;
 import net.laraifox.lib.graphics.Color3f;
 import net.laraifox.lib.graphics.FirstPersonCamera;
+import net.laraifox.lib.graphics.FlightCamera;
+import net.laraifox.lib.graphics.Mesh;
+import net.laraifox.lib.graphics.MeshLoader;
 import net.laraifox.lib.graphics.Transformf;
 import net.laraifox.lib.math.Vector2f;
 import net.laraifox.lib.math.Vector3f;
@@ -21,17 +24,23 @@ public class GameDisplay extends OpenGLDisplay {
 
 	private static ArrayList<String> stringBuffer = new ArrayList<String>();
 
+	private Mesh UNIT_CUBE;
+
 	private VectorFont font;
 	private Vector2f fontScale;
 
 	private Camera camera;
 	private Transformf transform;
+	private Transformf terrainTransform;
+	private HeightShader heightShader;
 	private SimpleShader simpleShader;
 	private TextureShader textureShader;
+
+	private Mesh terrainMesh;
 	private Fighter testFighter;
 
 	public GameDisplay(float width, float height) {
-		super("Flight Squadron Epsilon", width, height);
+		super("3D Flight Game", width, height);
 	}
 
 	protected void initializeOpenGL() {
@@ -58,16 +67,24 @@ public class GameDisplay extends OpenGLDisplay {
 	}
 
 	protected void initializeVariables() {
+		this.UNIT_CUBE = MeshLoader.loadMesh("./res/models/unit_cube.obj");
+
 		this.font = new VectorFont(new Font("Consolas", Font.PLAIN, 13), true);
 		this.fontScale = new Vector2f(2.0f / width, 2.0f / height);
 
 		this.camera = new FirstPersonCamera();
 		camera.setPosition(new Vector3f(0, 2, 20));
-		camera.setForward(Vector3f.Backward());
+		camera.setForward(Vector3f.Forward().negate());
 		this.transform = new Transformf();
+		this.terrainTransform = new Transformf();
+		terrainTransform.setTranslation(0, -100, 0);
+		terrainTransform.setScale(Vector3f.One().scale(50.0f));
+		
+		this.heightShader = new HeightShader();
 		this.simpleShader = new SimpleShader();
 		this.textureShader = new TextureShader();
 
+		this.terrainMesh = MeshLoader.loadMesh("./res/models/terrain/test_terrain.obj");
 		this.testFighter = new Fighter(Vector3f.Zero());
 
 		Transformf.setProjection(70.0f, (float) getWidth(), (float) getHeight(), 0.1f, 1000.0f);
@@ -89,26 +106,18 @@ public class GameDisplay extends OpenGLDisplay {
 	}
 
 	private void handleInput(float mouseDX, float mouseDY) {
-		if (Keyboard.isKeyDown(Keyboard.KEY_W))
+		if (Keyboard.isKeyDown(Keyboard.KEY_I))
 			camera.move(camera.getForward(), 0.2f);
-		if (Keyboard.isKeyDown(Keyboard.KEY_S))
+		if (Keyboard.isKeyDown(Keyboard.KEY_K))
 			camera.move(camera.getForward(), -0.2f);
-		if (Keyboard.isKeyDown(Keyboard.KEY_A))
+		if (Keyboard.isKeyDown(Keyboard.KEY_J))
 			camera.move(camera.getLeft(), 0.2f);
-		if (Keyboard.isKeyDown(Keyboard.KEY_D))
+		if (Keyboard.isKeyDown(Keyboard.KEY_L))
 			camera.move(camera.getRight(), 0.2f);
 		if (Keyboard.isKeyDown(Keyboard.KEY_SPACE))
 			camera.move(Vector3f.Up(), 0.2f);
 		if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL))
 			camera.move(Vector3f.Up(), -0.2f);
-		if (Keyboard.isKeyDown(Keyboard.KEY_UP))
-			camera.rotateX(-1);
-		if (Keyboard.isKeyDown(Keyboard.KEY_DOWN))
-			camera.rotateX(1);
-		if (Keyboard.isKeyDown(Keyboard.KEY_LEFT))
-			camera.rotateY(-1);
-		if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT))
-			camera.rotateY(1);
 
 		if (Mouse.isGrabbed()) {
 			camera.rotateX(mouseDY * MOUSE_LOOK_SENSITIVITY);
@@ -138,13 +147,14 @@ public class GameDisplay extends OpenGLDisplay {
 		handleInput(mouseDX, mouseDY);
 
 		if (Keyboard.isKeyDown(Keyboard.KEY_R)) {
-			camera = new FirstPersonCamera();
-			camera.setPosition(new Vector3f(0, 0, -10));
-			camera.setForward(Vector3f.Backward());
-			Transformf.setCamera(camera);
+			camera.setPosition(new Vector3f(0, 2, 20));
+			camera.setForward(Vector3f.Forward().negate());
 		}
 
-		testFighter.update();
+		testFighter.update(mouseDX, mouseDY);
+		camera.setPosition(testFighter.getCameraPosition());
+		camera.setForward(testFighter.getForward());
+		camera.setUpward(testFighter.getUpward());
 	}
 
 	protected void render() {
@@ -152,12 +162,18 @@ public class GameDisplay extends OpenGLDisplay {
 		GL11.glLoadIdentity();
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
 		simpleShader.bindShader();
+		transform.setScale(Vector3f.One());
 		simpleShader.updateUniforms(transform.getProjectedTransformation(), new Color3f(1.0f, 1.0f, 1.0f));
 
 		drawWorldAxes();
 
 		GL11.glColor3f(1, 1, 1);
 		testFighter.render(simpleShader);
+
+		heightShader.bindShader();
+		heightShader.updateUniforms(terrainTransform.getTransformation(), terrainTransform.getProjectedTransformation(), new Color3f(1.0f, 1.0f, 1.0f));
+
+		terrainMesh.render();
 
 		drawOnScreenData();
 	}
@@ -170,6 +186,7 @@ public class GameDisplay extends OpenGLDisplay {
 		GL11.glColor3f(1, 1, 0);
 
 		font.drawString(0.99f, 0.96f, "FPS: " + getCurrentFPS() + ", (Updates: " + getCurrentUPS() + ")", fontScale.getX(), fontScale.getY(), VectorFont.ALIGN_RIGHT);
+		font.drawString(0.99f, 0.92f, "Camera Position: " + camera.getPosition(), fontScale.getX(), fontScale.getY(), VectorFont.ALIGN_RIGHT);
 
 		for (int i = 0; i < stringBuffer.size(); i++) {
 			float x = (10 / width * 2.0f) - 1.0f;
