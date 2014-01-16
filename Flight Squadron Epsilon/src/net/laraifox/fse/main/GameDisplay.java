@@ -8,6 +8,7 @@ import net.laraifox.lib.graphics.Camera;
 import net.laraifox.lib.graphics.Color3f;
 import net.laraifox.lib.graphics.FirstPersonCamera;
 import net.laraifox.lib.graphics.Transformf;
+import net.laraifox.lib.math.Matrix4f;
 import net.laraifox.lib.math.Vector2f;
 import net.laraifox.lib.math.Vector3f;
 import net.laraifox.lib.text.VectorFont;
@@ -137,9 +138,8 @@ public class GameDisplay extends OpenGLDisplay {
 		}
 		handleInput(mouseDX, mouseDY);
 
-		if (Keyboard.isKeyDown(Keyboard.KEY_R)) {
-			camera = new FirstPersonCamera();
-			camera.setPosition(new Vector3f(0, 0, -10));
+		if (Keyboard.isKeyDown(Keyboard.KEY_C)) {
+			camera.setPosition(new Vector3f(0, 2, 20));
 			camera.setForward(Vector3f.Backward());
 			Transformf.setCamera(camera);
 		}
@@ -155,6 +155,8 @@ public class GameDisplay extends OpenGLDisplay {
 		simpleShader.updateUniforms(transform.getProjectedTransformation(), new Color3f(1.0f, 1.0f, 1.0f));
 
 		drawWorldAxes();
+		
+		simpleShader.updateUniforms(transform.getProjectedTransformation(), new Color3f(1.0f, 1.0f, 1.0f));
 
 		GL11.glColor3f(1, 1, 1);
 		testFighter.render(simpleShader);
@@ -169,7 +171,7 @@ public class GameDisplay extends OpenGLDisplay {
 		GL11.glDisable(GL11.GL_DEPTH_TEST);
 		GL11.glColor3f(1, 1, 0);
 
-		font.drawString(0.99f, 0.96f, "FPS: " + getCurrentFPS() + ", (Updates: " + getCurrentUPS() + ")", fontScale.getX(), fontScale.getY(), VectorFont.ALIGN_RIGHT);
+		font.drawString(0.98f, 0.94f, "FPS: " + getCurrentFPS() + ", (Updates: " + getCurrentUPS() + ")", fontScale.getX(), fontScale.getY(), VectorFont.ALIGN_RIGHT);
 
 		for (int i = 0; i < stringBuffer.size(); i++) {
 			float x = (10 / width * 2.0f) - 1.0f;
@@ -221,6 +223,29 @@ public class GameDisplay extends OpenGLDisplay {
 
 		GL11.glEnd();
 		GL11.glLineWidth(1.0f);
+		
+//		simpleShader.updateUniforms(new Matrix4f().initializeRotation(Transformf.getCamera().getForward(), Transformf.getCamera().getUpward()).multiply(transform.getTransformation()), new Color3f(1.0f, 1.0f, 1.0f));
+//		GL11.glPushMatrix();
+//		GL11.glTranslatef(0.9f, -0.9f, 0);
+//		GL11.glBegin(GL11.GL_LINES);
+//
+//		// X axis marker
+//		GL11.glColor3f(1, 0, 0);
+//		GL11.glVertex3f(0, 0, 0);
+//		GL11.glVertex3f(0.05f, 0, 0);
+//
+//		// Y axis marker
+//		GL11.glColor3f(0, 1, 0);
+//		GL11.glVertex3f(0, 0, 0);
+//		GL11.glVertex3f(0, 0.05f, 0);
+//
+//		// Z axis marker
+//		GL11.glColor3f(0, 0, 1);
+//		GL11.glVertex3f(0, 0, 0);
+//		GL11.glVertex3f(0, 0, 0.05f);
+//
+//		GL11.glEnd();
+//		GL11.glPopMatrix();
 	}
 
 	public static void addStringToBuffer(String string) {

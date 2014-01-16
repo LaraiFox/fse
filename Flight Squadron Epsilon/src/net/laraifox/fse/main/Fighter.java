@@ -107,19 +107,19 @@ public class Fighter {
 			if (Keyboard.isKeyDown(Keyboard.KEY_O))
 				drz -= rotationSpeed;
 
-			if (Keyboard.isKeyDown(Keyboard.KEY_NUMPAD0) && !KEY_NUMPAD0)
+			if (Keyboard.isKeyDown(Keyboard.KEY_RETURN) && !KEY_NUMPAD0)
 				transform.setRotation(Vector3f.Zero());
-			if (Keyboard.isKeyDown(Keyboard.KEY_NUMPAD8) && !KEY_NUMPAD8)
+			if (Keyboard.isKeyDown(Keyboard.KEY_LBRACKET) && !KEY_NUMPAD8)
 				drx -= 90;
-			if (Keyboard.isKeyDown(Keyboard.KEY_NUMPAD5) && !KEY_NUMPAD5)
+			if (Keyboard.isKeyDown(Keyboard.KEY_APOSTROPHE) && !KEY_NUMPAD5)
 				drx += 90;
-			if (Keyboard.isKeyDown(Keyboard.KEY_NUMPAD4) && !KEY_NUMPAD4)
+			if (Keyboard.isKeyDown(Keyboard.KEY_SEMICOLON) && !KEY_NUMPAD4)
 				dry += 90;
-			if (Keyboard.isKeyDown(Keyboard.KEY_NUMPAD6) && !KEY_NUMPAD6)
+			if (Keyboard.isKeyDown(Keyboard.KEY_BACKSLASH) && !KEY_NUMPAD6)
 				dry -= 90;
-			if (Keyboard.isKeyDown(Keyboard.KEY_NUMPAD9) && !KEY_NUMPAD9)
+			if (Keyboard.isKeyDown(Keyboard.KEY_RBRACKET) && !KEY_NUMPAD9)
 				drz += 90;
-			if (Keyboard.isKeyDown(Keyboard.KEY_NUMPAD7) && !KEY_NUMPAD7)
+			if (Keyboard.isKeyDown(Keyboard.KEY_P) && !KEY_NUMPAD7)
 				drz -= 90;
 
 			float rx = transform.getRotation().getX();
@@ -195,13 +195,13 @@ public class Fighter {
 
 		float dragForce;
 
-		KEY_NUMPAD0 = Keyboard.isKeyDown(Keyboard.KEY_NUMPAD0);
-		KEY_NUMPAD4 = Keyboard.isKeyDown(Keyboard.KEY_NUMPAD4);
-		KEY_NUMPAD5 = Keyboard.isKeyDown(Keyboard.KEY_NUMPAD5);
-		KEY_NUMPAD6 = Keyboard.isKeyDown(Keyboard.KEY_NUMPAD6);
-		KEY_NUMPAD7 = Keyboard.isKeyDown(Keyboard.KEY_NUMPAD7);
-		KEY_NUMPAD8 = Keyboard.isKeyDown(Keyboard.KEY_NUMPAD8);
-		KEY_NUMPAD9 = Keyboard.isKeyDown(Keyboard.KEY_NUMPAD9);
+		KEY_NUMPAD0 = Keyboard.isKeyDown(Keyboard.KEY_RETURN);
+		KEY_NUMPAD4 = Keyboard.isKeyDown(Keyboard.KEY_SEMICOLON);
+		KEY_NUMPAD5 = Keyboard.isKeyDown(Keyboard.KEY_APOSTROPHE);
+		KEY_NUMPAD6 = Keyboard.isKeyDown(Keyboard.KEY_BACKSLASH);
+		KEY_NUMPAD7 = Keyboard.isKeyDown(Keyboard.KEY_P);
+		KEY_NUMPAD8 = Keyboard.isKeyDown(Keyboard.KEY_LBRACKET);
+		KEY_NUMPAD9 = Keyboard.isKeyDown(Keyboard.KEY_RBRACKET);
 	}
 
 	public void render(SimpleShader shader) {
