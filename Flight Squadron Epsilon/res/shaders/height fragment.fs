@@ -5,6 +5,9 @@ uniform vec3 color;
 varying float yPos;
 
 void main() {
-	float mapColor = clamp((yPos + 100.0) / 200.0, 0.0, 1.0);
-	gl_FragColor = vec4(color, 1.0) * vec4(mapColor, 0.0, 0.0f, 1.0f);
+	float mapColor = clamp((yPos + 150.0) / 800.0, 0.05f, 0.95f);
+	
+	mapColor = float(int(mapColor * 16.0f) / 16.0f);
+	
+	gl_FragColor = vec4(color, 1.0) * vec4(mapColor, mapColor, mapColor, 1.0f);
 }

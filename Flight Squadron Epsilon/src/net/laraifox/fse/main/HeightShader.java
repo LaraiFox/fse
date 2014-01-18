@@ -1,10 +1,9 @@
 package net.laraifox.fse.main;
 
-import net.laraifox.lib.graphics.Color3f;
 import net.laraifox.lib.graphics.Shader;
 import net.laraifox.lib.graphics.ShaderLoader;
 import net.laraifox.lib.math.Matrix4f;
-import net.laraifox.lib.util.VectorUtil;
+import net.laraifox.lib.math.Vector3f;
 
 public class HeightShader extends Shader {
 	public HeightShader() {
@@ -19,10 +18,10 @@ public class HeightShader extends Shader {
 		addUniform("color");
 	}
 
-	public void updateUniforms(Matrix4f transformationMatrix, Matrix4f projectedTransformationMatrix, Color3f color) {
+	public void updateUniforms(Matrix4f transformationMatrix, Matrix4f projectedTransformationMatrix, Vector3f color) {
 		setUniform("objTransform", transformationMatrix);
 		setUniform("transform", projectedTransformationMatrix);
-		setUniform("color", VectorUtil.toVector3f(color));
+		setUniform("color", color);
 	}
 
 	public void bindShader() {

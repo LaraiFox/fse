@@ -1,7 +1,6 @@
 package net.laraifox.fse.main;
 
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
 
 public class Input {
 	public static int MOUSE_BUTTON_LEFT = 0;
