@@ -112,7 +112,8 @@ public class Fighter {
 
 		shader.updateUniforms(transform.createProjectedTransformation(transformationMatrix), new Color3f(1.0f, 1.0f, 1.0f));
 		modelMesh.render();
-		drawAxes(10, false);
+
+		// drawAxes(10, false);
 	}
 
 	private void drawAxes(float length, boolean drawNegatives) {
