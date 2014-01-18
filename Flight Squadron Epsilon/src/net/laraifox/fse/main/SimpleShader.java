@@ -1,10 +1,9 @@
 package net.laraifox.fse.main;
 
-import net.laraifox.lib.graphics.Color3f;
 import net.laraifox.lib.graphics.Shader;
 import net.laraifox.lib.graphics.ShaderLoader;
 import net.laraifox.lib.math.Matrix4f;
-import net.laraifox.lib.util.VectorUtil;
+import net.laraifox.lib.math.Vector3f;
 
 public class SimpleShader extends Shader {
 	public SimpleShader() {
@@ -18,9 +17,9 @@ public class SimpleShader extends Shader {
 		addUniform("color");
 	}
 
-	public void updateUniforms(Matrix4f transformationMatrix, Color3f color) {
+	public void updateUniforms(Matrix4f transformationMatrix, Vector3f color) {
 		setUniform("transform", transformationMatrix);
-		setUniform("color", VectorUtil.toVector3f(color));
+		setUniform("color", color);
 	}
 
 	public void bindShader() {

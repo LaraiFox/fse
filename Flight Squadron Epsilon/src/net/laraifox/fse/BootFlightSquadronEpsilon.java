@@ -9,6 +9,9 @@ import net.laraifox.fse.main.Settings;
 public class BootFlightSquadronEpsilon {
 
 	public static void main(String[] args) {
+		int windowWidth = 800;
+		int windowHeight = 600;
+
 		String operatingSystem = System.getProperty("os.name").toLowerCase();
 		String username = System.getProperty("user.name");
 		String programFolder = Settings.getProgramFolderName();
@@ -17,11 +20,17 @@ public class BootFlightSquadronEpsilon {
 			System.setProperty("org.lwjgl.librarypath", new File("res/lwjgl-natives/windows").getAbsolutePath());
 
 			Settings.setProgramDirectory("/Users/" + username + "/AppData/Roaming/" + programFolder);
+
+			windowWidth = 1600;
+			windowHeight = 900;
 		} else if (operatingSystem.contains("mac")) {
 			System.setProperty("org.lwjgl.librarypath", new File("res/lwjgl-natives/macosx").getAbsolutePath());
 			System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Flight Squadron Epsilon");
 
 			Settings.setProgramDirectory("/Users/" + username + "/Library/" + programFolder);
+
+			windowWidth = 1120;
+			windowHeight = 630;
 		} else if (operatingSystem.contains("linux")) {
 			System.setProperty("org.lwjgl.librarypath", new File("res/lwjgl-natives/linux").getAbsolutePath());
 
@@ -31,12 +40,12 @@ public class BootFlightSquadronEpsilon {
 			new Exception().printStackTrace();
 			System.exit(1);
 		}
-		
+
 		try {
 			Settings.initializeProgramDirectories();
 			Settings.loadSettings();
 
-			GameDisplay programDisplay = new GameDisplay(1120, 700);
+			GameDisplay programDisplay = new GameDisplay(windowWidth, windowHeight);
 			programDisplay.setOrthoNear(0.1f);
 			programDisplay.setOrthoFar(1000.0f);
 			programDisplay.intitialize();
