@@ -6,10 +6,11 @@ import java.util.ArrayList;
 
 import net.laraifox.lib.display.OpenGLDisplay;
 import net.laraifox.lib.graphics.Camera;
+import net.laraifox.lib.graphics.EulerTransform;
 import net.laraifox.lib.graphics.FirstPersonCamera;
 import net.laraifox.lib.graphics.Mesh;
 import net.laraifox.lib.graphics.MeshLoader;
-import net.laraifox.lib.graphics.Transformf;
+import net.laraifox.lib.graphics.Transform;
 import net.laraifox.lib.math.Vector2f;
 import net.laraifox.lib.math.Vector3f;
 import net.laraifox.lib.math.Vector4f;
@@ -29,8 +30,8 @@ public class GameDisplay extends OpenGLDisplay {
 	private Vector2f fontAlignment;
 
 	private Camera camera;
-	private Transformf transform;
-	private Transformf terrainTransform;
+	private EulerTransform transform;
+	private EulerTransform terrainTransform;
 	private HeightShader heightShader;
 	private SimpleShader simpleShader;
 	private TextureShader textureShader;
@@ -94,8 +95,8 @@ public class GameDisplay extends OpenGLDisplay {
 		this.camera = new FirstPersonCamera();
 		camera.setPosition(new Vector3f(0, 2, 20));
 		camera.setForward(Vector3f.Forward().negate());
-		this.transform = new Transformf();
-		this.terrainTransform = new Transformf();
+		this.transform = new EulerTransform();
+		this.terrainTransform = new EulerTransform();
 		terrainTransform.setTranslation(0, -1000, 0);
 		terrainTransform.setScale(Vector3f.One().scale(1000.0f));
 
@@ -106,8 +107,8 @@ public class GameDisplay extends OpenGLDisplay {
 		this.terrainMesh = MeshLoader.loadMesh("./res/models/terrain/test_terrain.obj");
 		this.testFighter = new Fighter(Vector3f.Zero());
 
-		Transformf.setProjection(70.0f, (float) getWidth(), (float) getHeight(), 0.1f, 10000.0f);
-		Transformf.setCamera(camera);
+		Transform.setProjection(70.0f, (float) getWidth(), (float) getHeight(), 0.1f, 10000.0f);
+		Transform.setCamera(camera);
 
 		// try {
 		// Keyboard.create();
@@ -118,6 +119,10 @@ public class GameDisplay extends OpenGLDisplay {
 
 		// Mouse.setClipMouseCoordinatesToWindow(!Mouse.isClipMouseCoordinatesToWindow());
 		// Mouse.setGrabbed(!Mouse.isGrabbed());
+	}
+
+	protected void cleanUp() {
+
 	}
 
 	protected void tick() {
@@ -204,12 +209,10 @@ public class GameDisplay extends OpenGLDisplay {
 		GL11.glColor3f(1, 1, 0);
 
 		drawString(width - 10, 25, "FPS: " + getCurrentFPS() + ", (Updates: " + getCurrentUPS() + ")", VectorFont.ALIGN_RIGHT);
-		drawString(width - 10, 45, "Camera Position: " + camera.getPosition(), VectorFont.ALIGN_RIGHT);
+		drawString(width - 10, 45, "Camera Position: " + camera.getPosition().toString(1), VectorFont.ALIGN_RIGHT);
 
 		for (int i = 0; i < stringBuffer.size(); i++) {
-			float x = (10 / width * 2.0f) - 1.0f;
-			float y = 1.0f - ((25 + i * 20) / height * 2.0f);
-			font.drawString(x, y, stringBuffer.get(i), fontScale.getX(), fontScale.getY());
+			drawString(10, (25 + i * 20), stringBuffer.get(i), VectorFont.ALIGN_LEFT);
 		}
 
 		GameDisplay.stringBuffer.clear();

@@ -5,6 +5,9 @@ import java.io.IOException;
 
 import net.laraifox.fse.main.GameDisplay;
 import net.laraifox.fse.main.Settings;
+import net.laraifox.lib.graphics.OrthographicProjection;
+
+import org.lwjgl.LWJGLException;
 
 public class BootFlightSquadronEpsilon {
 
@@ -46,8 +49,7 @@ public class BootFlightSquadronEpsilon {
 			Settings.loadSettings();
 
 			GameDisplay programDisplay = new GameDisplay(windowWidth, windowHeight);
-			programDisplay.setOrthoNear(0.1f);
-			programDisplay.setOrthoFar(1000.0f);
+			programDisplay.setOrthographicProjection(new OrthographicProjection(0.1f, 1000.0f));
 			programDisplay.intitialize();
 			programDisplay.start();
 
@@ -55,6 +57,8 @@ public class BootFlightSquadronEpsilon {
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (LWJGLException e) {
 			e.printStackTrace();
 		}
 	}
